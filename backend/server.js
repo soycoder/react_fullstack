@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
-const getSecret = require("./secret");
+//const getSecret = require("./secret");
 const express = require("express");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
 const Data = require("./data");
@@ -9,7 +10,11 @@ const API_PORT = 3001;
 const app = express();
 const router = express.Router();
 
-mongoose.connect(getSecret("dbUri"));
+const dbRoute =  'mongodb+srv://dbUser:*devcode@clusterew1-uogmd.mongodb.net/test';
+
+
+mongoose.connect(dbRoute, { useNewUrlParser: true });
+mongoose.set('useFindAndModify', false);
 let db = mongoose.connection;
 
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
@@ -17,6 +22,7 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(logger("dev"));
+app.use(cors());
 
 router.get("/", (req, res) => {
   res.json({ message: "HELLOW WORLDUUHHHH" });
@@ -39,6 +45,8 @@ router.post("/updateData", (req, res) => {
 
 router.delete("/deleteData", (req, res) => {
   const { id } = req.body;
+  console.log(req.body);
+  
   Data.findByIdAndRemove(id, err => {
     if (err) return res.send(err);
     return res.json({ success: true });
